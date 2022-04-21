@@ -16,7 +16,7 @@ import (
 	"strconv"
 	"time"
 
-	"golang.org/x/crypto/openpgp/errors"
+	"github.com/pschou/go_openpgp/errors"
 )
 
 // PublicKeyV3 represents older, version 3 public keys. These keys are less secure and
@@ -216,6 +216,7 @@ func (pk *PublicKeyV3) VerifySignatureV3(signed hash.Hash, sig *SignatureV3) (er
 		// V3 public keys only support RSA.
 		panic("shouldn't happen")
 	}
+	panic("unreachable")
 }
 
 // VerifyUserIdSignatureV3 returns nil iff sig is a valid signature, made by this
