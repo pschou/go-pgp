@@ -64,6 +64,20 @@ func TestSignDetachedP256(t *testing.T) {
 	testDetachedSignature(t, kring, out, signedInput, "check", testKeyP256KeyId)
 }
 
+func TestSignDetachedEdDSA(t *testing.T) {
+	kring, _ := ReadKeyRing(readerFromHex(eddsaTestKeyPrivateHex))
+	kring[0].PrivateKey.Decrypt([]byte("testing"))
+
+	out := bytes.NewBuffer(nil)
+	message := bytes.NewBufferString(signedInput)
+	err := DetachSign(out, kring[0], message, nil)
+	if err != nil {
+		t.Error(err)
+	}
+
+	testDetachedSignature(t, kring, out, signedInput, "check", testKeyEdDSAKeyId)
+}
+
 func TestNewEntity(t *testing.T) {
 	if testing.Short() {
 		return
@@ -80,7 +94,7 @@ func TestNewEntity(t *testing.T) {
 		t.Errorf("failed to find bit length: %s", err)
 	}
 	if int(bl) != defaultRSAKeyBits {
-		t.Errorf("BitLength %v, expected %v", defaultRSAKeyBits)
+		t.Errorf("BitLength %v, expected %v", int(bl), defaultRSAKeyBits)
 	}
 
 	// Check bit-length with a config.
@@ -179,6 +193,14 @@ var testEncryptionTests = []struct {
 		dsaElGamalTestKeysHex,
 		true,
 	},
+	{
+		ecdhTestKeysHex,
+		false,
+	},
+	{
+		ecdhTestKeysHex,
+		true,
+	},
 }
 
 func TestEncryption(t *testing.T) {
@@ -238,7 +260,7 @@ func TestEncryption(t *testing.T) {
 			signKey, _ := kring[0].signingKey(testTime)
 			expectedKeyId := signKey.PublicKey.KeyId
 			if md.SignedByKeyId != expectedKeyId {
-				t.Errorf("#%d: message signed by wrong key id, got: %d, want: %d", i, *md.SignedBy, expectedKeyId)
+				t.Errorf("#%d: message signed by wrong key id, got: %v, want: %v", i, *md.SignedBy, expectedKeyId)
 			}
 			if md.SignedBy == nil {
 				t.Errorf("#%d: failed to find the signing Entity", i)
